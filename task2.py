@@ -29,14 +29,23 @@ print(top_5_states)
 print("Companies with a rating of 4.9 and above:")
 print(high_rating_company_list)
 
-"""
+
 plt.figure(figsize = (10, 6))
 top_5_states.plot(kind = "bar", color = "skyblue")
 plt.title(" Top 5 States with the Most Data Science Jobs")
 plt.xlabel("State")
 plt.ylabel("NUmber of Jobs")
 plt.xticks(rotation=45)
+#plt.tight_layout()
+#plt.show()
+
+
+plt.figure(figsize=(30, 8))
+plt.bar(high_rating_companies["Company Name"], high_rating_companies["Rating"], color='skyblue',edgecolor="red")
+plt.xlabel('Company Name')
+plt.ylabel('Rating')
+plt.title('Ratings of High-Rating Companies')
+plt.xticks(rotation=90)  # Rotate x-axis labels for better readability
+
 plt.tight_layout()
 plt.show()
-
-"""
