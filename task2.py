@@ -4,86 +4,69 @@ import matplotlib.pyplot as plt
 
 RATING_VALUE = 4
 AMOUNT_OF_TOP_STATES = 5
+OTER_TRESHOLD = 2.5
+
 
 # Load the CSV file into a DataFrame
 jobs_df = pd.read_csv("Uncleaned_DS_jobs.csv")
 
-"""
+########################## Pre-processing Data ##########################################################
+
+#"""
 # Unic job titles and counts
 unique_job_titles = jobs_df["Job Title"].unique().tolist()
 position_counts = jobs_df["Job Title"].value_counts()
-
 
 # Combine the two lists using zip and convert to DataFrame and save it to CSV file
 df = pd.DataFrame(list(zip(unique_job_titles, position_counts)), columns=['Job Title', 'Count'])
 df.to_csv('job_title_counts.csv', index=False)
 
-
-"""
 # Filter out job titles containing "data science" or "data scientist"
-data_science_jobs = jobs_df[jobs_df["Job Title"].str.contains("data science|data scientist", case=False)]
+data_science_jobs = jobs_df[jobs_df["Job Title"].str.contains("data science|data scientist|data engineer", case=False)]
 
 # Repersenting the rest of the data frame and counting uniques and the amount of entries
-rest_of_table = jobs_df[~jobs_df["Job Title"].str.contains("data science|data scientist", case=False)]
+rest_of_table = jobs_df[~jobs_df["Job Title"].str.contains("data science|data scientist|data engineer", case=False)]
 a = rest_of_table["Job Title"].value_counts()
 
-print(a)
+#print(a)
+#"""
+#########################################################################################################
 
-
-
+########################## Task_1 ######################################################################
 """
-# Filter out Company's names containing reting 4.8 and above
-data_science_jobs["Rating"] = pd.to_numeric(jobs_df["Rating"], errors="coerce")
-high_rating_companies = jobs_df[jobs_df["Rating"] >= RATING_VALUE]
-high_rating_company_list = high_rating_companies["Company Name"].tolist()
-
-# Sorting high rating companies by rating
-sorted_high_rating_companies = high_rating_companies.sort_values(by="Rating", ascending=False)
-
 # Count the number of jobs per state
-data_science_jobs["State"] = data_science_jobs["Location"].str.split(", ").str[-1]
-jobs_per_state = data_science_jobs["State"].value_counts()
-
-
+data_science_jobs_by_state= data_science_jobs["Location"].str.split(", ").str[-1]
+jobs_per_state = data_science_jobs_by_state.value_counts()
 
 # Get the top 5 states
-top_5_states = jobs_per_state.head(AMOUNT_OF_TOP_STATES)
-
-
+top_states = jobs_per_state.head(AMOUNT_OF_TOP_STATES)
 
 #print("Top 5 States with the Most Data Science Jobs:")
-#print(top_5_states)
+#print(top_states)
 #print("Companies with a rating of 4.9 and above:")
 #print(high_rating_company_list)
-
-
-
 """
-# Plot of two separate figures
+############# Bar-type plot ################
 """
 plt.figure(figsize = (10, 6))
-top_5_states.plot(kind = "bar", color = "skyblue")
+top_states.plot(kind = "bar", color = "skyblue")
 plt.title(" Top 5 States with the Most Data Science Jobs")
 plt.xlabel("State")
-plt.ylabel("NUmber of Jobs")
+plt.ylabel("Number of Jobs")
 plt.xticks(rotation=45)
 plt.tight_layout()
 plt.show()
-
 """
-
-
+############# Pie-type plot ################
 """
-plt.figure(figsize=(30, 8))
-plt.bar(sorted_high_rating_companies["Company Name"], sorted_high_rating_companies["Rating"], color='skyblue',edgecolor="red")
-plt.xlabel('Company Name')
-plt.ylabel('Rating')
-plt.title('Ratings of High-Rating Companies')
-plt.xticks(rotation=90)  # Rotate x-axis labels for better readability
-
+plt.figure(figsize=(10, 6))
+top_states.plot(kind="pie", autopct='%1.1f%%', startangle=180)
+plt.title("Top 5 States with the Most Data Science Jobs")
+plt.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
 plt.tight_layout()
 plt.show()
 """
+############# Plot two plots at one fugure ################
 """
  #Plot two plots at one fugure
 
@@ -105,11 +88,20 @@ axes[1].tick_params(axis='x', rotation=90)
 
 plt.tight_layout()
 plt.show()
+"""
+#########################################################################################################
+
+########################## Task_2 #######################################################################
 
 """
+# Filter out Company's names containing rating RATING_VALUE and above
+data_science_jobs.loc[:, "Rating"] = pd.to_numeric(jobs_df["Rating"], errors="coerce")
+high_rating_companies = jobs_df[jobs_df["Rating"] >= RATING_VALUE]
+high_rating_company_list = high_rating_companies["Company Name"].tolist()
 
+# Sorting high rating companies by rating
+sorted_high_rating_companies = high_rating_companies.sort_values(by="Rating", ascending=False)
 
-"""
 # Calculate the count of companies for each rating value
 rating_counts = sorted_high_rating_companies["Rating"].value_counts()
 
@@ -121,32 +113,27 @@ plt.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
 plt.show()
 
 """
-"""
-# Extract industry information from job titles
-def extract_industry(title):
-    if "data science" in title.lower() or "data scientist" in title.lower():
-        return "Data Science"
-    elif "finance" in title.lower() or "financial" in title.lower():
-        return "Finance"
-    elif "health" in title.lower() or "medical" in title.lower():
-        return "Healthcare"
-    elif "Information Technology" in title.lower() or "technology" in title.lower():
-        return "Technology"
-    elif "Aerospace" in title.lower() or "Defence" in title.lower():
-        return "Aerospase & Defence"
-    else:
-        return "Other"
+#########################################################################################################
 
-jobs_df["Industry"] = jobs_df["Job Title"].apply(extract_industry)
+########################## Task_3 ######################################################################
 
-# Count the number of jobs per industry
-jobs_per_industry = jobs_df["Sector"].value_counts()
+#"""
 
-# Create a pie chart
+# Replace "-1" or NaN values in "Sector" with "No Data" in the copied DataFrame using .loc accessor
+data_science_jobs.loc[data_science_jobs["Sector"].isna(), "Sector"] = "No Data"
+data_science_jobs.loc[data_science_jobs["Sector"] == "-1", "Sector"] = "No Data"
+
+# Calculate percentage of jobs in each sector
+sector_percentage = (data_science_jobs["Sector"].value_counts() / len(data_science_jobs)) * 100
+
+# Identify sectors with less than a treshold representation and group them under "Other"
+sector_percentage["Other"] = sector_percentage[sector_percentage < OTER_TRESHOLD].sum()
+sector_percentage = sector_percentage[sector_percentage >= OTER_TRESHOLD]
+
+# Plot the pie chart
 plt.figure(figsize=(8, 8))
-plt.pie(jobs_per_industry, labels=jobs_per_industry.index, autopct='%1.1f%%', startangle=140)
-plt.title('Distribution of Job Positions by Industry')
+plt.pie(sector_percentage, labels=sector_percentage.index, autopct='%1.1f%%', startangle=180,)
+plt.title('Percentage of Data Science Jobs in Each Sector')
 plt.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
 plt.show()
-
 #"""
