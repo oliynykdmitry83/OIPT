@@ -1,7 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
-
+MATCHES = ["data science", "data scientist", "data engineer"]
 RATING_VALUE = 4
 AMOUNT_OF_TOP_STATES = 5
 OTER_TRESHOLD = 2.5
@@ -22,7 +22,7 @@ df = pd.DataFrame(list(zip(unique_job_titles, position_counts)), columns=['Job T
 df.to_csv('job_title_counts.csv', index=False)
 
 # Filter out job titles containing "data science" or "data scientist"
-data_science_jobs = jobs_df[jobs_df["Job Title"].str.contains("data science|data scientist|data engineer", case=False)]
+data_science_jobs = jobs_df[jobs_df["Job Title"].apply(lambda x: any(match in x.lower() for match in MATCHES))]
 
 # Repersenting the rest of the data frame and counting uniques and the amount of entries
 rest_of_table = jobs_df[~jobs_df["Job Title"].str.contains("data science|data scientist|data engineer", case=False)]
@@ -32,7 +32,7 @@ a = rest_of_table["Job Title"].value_counts()
 #"""
 #########################################################################################################
 
-########################## Task_1 ######################################################################
+########################## Task_1 #######################################################################
 """
 # Count the number of jobs per state
 data_science_jobs_by_state= data_science_jobs["Location"].str.split(", ").str[-1]
@@ -115,9 +115,9 @@ plt.show()
 """
 #########################################################################################################
 
-########################## Task_3 ######################################################################
+########################## Task_3 #######################################################################
 
-#"""
+"""
 
 # Replace "-1" or NaN values in "Sector" with "No Data" in the copied DataFrame using .loc accessor
 data_science_jobs.loc[data_science_jobs["Sector"].isna(), "Sector"] = "No Data"
@@ -136,4 +136,4 @@ plt.pie(sector_percentage, labels=sector_percentage.index, autopct='%1.1f%%', st
 plt.title('Percentage of Data Science Jobs in Each Sector')
 plt.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
 plt.show()
-#"""
+"""
